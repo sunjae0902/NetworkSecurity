@@ -1,31 +1,28 @@
-import hmac
-import hashlib
+from Crypto.Hash import HMAC
+import os
 
-f1=open('1.txt','r')
+infile=open('H.txt','rb')
 
-password=input("pwd:")
-message=''
+password=input("pwd:").encode()
+chunk_size = 1024
+filesize = os.path.getsize("H.txt")
 
-h1=hmac.new(password.encode('utf-8'),message.encode('utf-8'),hashlib.sha256) 
-message=f1.read(1024)
-h1.update(message.encode('utf-8'))
-mac= h1.digest()
-print("1.txt's HMAC: ",mac)
+textfile = b''
+while True:
+	chunk = infile.read(chunk_size)
+	if len(chunk) == 0:
+		break;
+	textfile += chunk
+mac1 = textfile[filesize-16:] # 마지막hmac 값 (16바이트) 
+textfile = textfile[:filesize-16] #hmac 값을 제외한 본문 내용
 
-
-#receiver
-
-f2=open("H.txt",'r')
-
-
-h2=hmac.new(password.encode('utf-8'),message.encode('utf-8'),hashlib.sha256)
-message=f2.read(1024)
-h2.update (message.encode('utf-8'))
-mac2= h2.digest()
-print("H.txt's HMAC: ",mac2)
+h = HMAC.new(password)
+h.update(textfile) # hash update
+mac2 = h.digest()
+print("HMAC: ",mac2)
 
 
-if mac == mac2 : 
+if mac1 == mac2 : 
 	print ("OK")
 else:
 	print("NOK")
